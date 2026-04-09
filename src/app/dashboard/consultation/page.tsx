@@ -93,32 +93,36 @@ export default function ConsultationModule() {
       </header>
 
       {/* Progress Wizard */}
-      <div className="flex justify-between items-center mb-12 relative px-4">
-        <div className="absolute left-8 right-8 top-1/2 h-0.5 bg-border -z-10 -translate-y-1/2" />
-        <div 
-          className="absolute left-8 h-0.5 bg-indigo-500 -z-10 -translate-y-1/2 transition-all duration-500"
-          style={{ width: `calc((100% - 4rem) * ${(step - 1) / (totalSteps - 1)})` }}
-        />
-        
-        {STEPS.map((s) => {
+      <div className="flex justify-between items-center mb-16 relative px-4 sm:px-8">
+        {STEPS.map((s, idx) => {
           const isActive = s.id === step;
           const isPast = s.id < step;
           const Icon = s.icon;
           
           return (
-            <div key={s.id} className="flex flex-col items-center gap-2 bg-background px-2">
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center border-4 border-background transition-colors duration-300 ${
-                isActive ? "bg-indigo-500 text-white" : 
-                isPast ? "bg-emerald-500 text-white" : 
-                "bg-black/5 dark:bg-white/5 text-muted-foreground"
-              }`}>
-                {isPast ? <CheckCircle2 className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
-              </div>
-              <div className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-center w-auto sm:w-24">
-                <div className={isActive ? "text-indigo-600 dark:text-indigo-400" : isPast ? "text-foreground" : "text-muted-foreground/50"}>
-                  {s.title}
+            <div key={s.id} className="flex flex-1 items-center relative">
+              {/* Step Circle & Label */}
+              <div className="flex flex-col items-center relative z-10 shrink-0">
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
+                  isActive ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/40 ring-4 ring-indigo-500/20" : 
+                  isPast ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/40" : 
+                  "bg-black/5 dark:bg-white/10 text-muted-foreground border border-border"
+                }`}>
+                  {isPast ? <CheckCircle2 className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
+                </div>
+                <div className="absolute top-14 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-center w-32 left-1/2 -translate-x-1/2">
+                  <div className={isActive ? "text-indigo-600 dark:text-indigo-400" : isPast ? "text-foreground" : "text-muted-foreground/40"}>
+                    {s.title}
+                  </div>
                 </div>
               </div>
+
+              {/* Connecting Line (Only render if not the last item) */}
+              {idx < STEPS.length - 1 && (
+                <div className="flex-1 h-[2px] mx-4 relative overflow-hidden bg-black/5 dark:bg-white/10 rounded-full">
+                   <div className={`absolute top-0 left-0 bottom-0 transition-all duration-500 ${isPast ? "bg-indigo-500" : "bg-transparent"}`} style={{ width: s.id < step ? "100%" : "0%" }} />
+                </div>
+              )}
             </div>
           )
         })}
