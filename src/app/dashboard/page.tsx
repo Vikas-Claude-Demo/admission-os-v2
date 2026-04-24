@@ -1,93 +1,140 @@
 "use client";
 
-import { Activity, Clock, ShieldCheck, ArrowRight, BookOpen, AlertTriangle } from "lucide-react";
+import { useDashboardData } from "@/components/DashboardDataProvider";
+import { Activity, AlertTriangle, ArrowRight, ShieldCheck } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 
 export default function DashboardHome() {
+  const { hasNao, latestForm } = useDashboardData();
+
+  const firstName = latestForm?.full_name?.trim().split(" ")[0] || "there";
+  const targetSchools = latestForm?.target_schools?.filter(Boolean) ?? [];
+  const leadSchool = targetSchools[0] ?? "your target schools";
+  const yearsExperience = latestForm?.years_experience ?? 0;
+
+  const modules = [
+    { id: 1, name: "Consultation Form", status: hasNao ? "Completed" : "Open now", path: "/dashboard/consultation" },
+    { id: 2, name: "Resume / CV", status: "Reviewed (95/100)", path: "/dashboard/resume" },
+    { id: 3, name: "Recommendation Letters", status: "Action Required", pending: true, path: "/dashboard/recommendations" },
+    { id: 4, name: "Personal Essays", status: "In Progress (3 drafts)", path: "/dashboard/essays" },
+    { id: 5, name: "School-Specific Essays", status: "Not Started", path: "/dashboard/school-essays" },
+    { id: 6, name: "Scholarship Essays", status: "Not Started", path: "/dashboard/scholarships" },
+    { id: 7, name: "Transcripts + Test Scores", status: "Completed", path: "/dashboard/transcripts" },
+    { id: 8, name: "Interview Prep", status: "Not Started", path: "/dashboard/interviews" }
+  ].map((module) => {
+    if (hasNao || module.id === 1) {
+      return module;
+    }
+
+    return {
+      ...module,
+      status: "Locked until NAO is generated",
+      pending: false,
+      locked: true
+    };
+  });
+
   return (
-    <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
-      <header className="mb-10">
-        <h1 className="text-3xl font-bold tracking-tight mb-2">Welcome back, Shridhar</h1>
-        <p className="text-muted-foreground">Your Stanford GSB application is 75% complete. 12 days left until Round 1 deadline.</p>
+    <div className="space-y-10 animate-fade-in">
+      <header className="mb-10 max-w-[720px]">
+        <div className="font-mono text-[11px] tracking-[0.12em] uppercase text-accent-clr mb-2">
+          Dashboard · Overview
+        </div>
+        <h1 className="font-serif font-medium text-[36px] tracking-[-0.02em] leading-[1.1] mb-3 text-ink">
+          Welcome back, {firstName}
+        </h1>
+        <p className="font-serif italic text-[17px] text-ink-soft leading-[1.5]">
+          {hasNao
+            ? `Your Narrative Anchor is active for ${leadSchool}. Continue the unlocked workflow.`
+            : "Your journey is locked until the intake creates a valid Narrative Anchor JSON."}
+        </p>
       </header>
 
       {/* Global Health Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="p-6 rounded-2xl glass-panel relative overflow-hidden group">
-          <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="p-5 bg-panel border border-rule rounded-lg relative overflow-hidden group">
+          <div className="absolute inset-0 bg-accent-clr/5 opacity-0 group-hover:opacity-100 transition-opacity" />
           <div className="flex justify-between items-start mb-4">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-              <ShieldCheck className="w-5 h-5 text-emerald-400" />
+            <div className="w-9 h-9 rounded-full bg-paper flex items-center justify-center border border-rule">
+              <ShieldCheck className="w-4 h-4 text-accent-clr" />
             </div>
           </div>
-          <h3 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">App Health Score</h3>
-          <div className="text-4xl font-bold mt-1 text-emerald-500 dark:text-emerald-400">92<span className="text-lg text-emerald-500/50 dark:text-white/30">/100</span></div>
-          <p className="text-xs text-emerald-400/80 mt-2">Strong profile alignment across current documents.</p>
+          <h3 className="font-mono text-[10px] tracking-[0.14em] uppercase text-ink-faint font-medium">App Health Score</h3>
+          <div className="font-serif font-medium text-[32px] mt-1 text-ink tracking-tight">
+            {hasNao ? "92" : "--"}<span className="text-sm text-ink-faint ml-1">/100</span>
+          </div>
+          <p className="font-serif italic text-[12px] text-ink-soft mt-2 leading-relaxed">
+            {hasNao
+              ? "Strong profile alignment across current documents."
+              : "Complete intake first to compute your profile alignment."}
+          </p>
         </div>
 
-        <div className="p-6 rounded-2xl glass-panel relative overflow-hidden group">
-          <div className="absolute inset-0 bg-amber-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="p-5 bg-panel border border-rule rounded-lg relative overflow-hidden group">
+          <div className="absolute inset-0 bg-warn/5 opacity-0 group-hover:opacity-100 transition-opacity" />
           <div className="flex justify-between items-start mb-4">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
-              <AlertTriangle className="w-5 h-5 text-amber-400" />
+            <div className="w-9 h-9 rounded-full bg-paper flex items-center justify-center border border-rule">
+              <AlertTriangle className="w-4 h-4 text-warn" />
             </div>
           </div>
-          <h3 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">Weakest Link</h3>
-          <div className="text-xl font-bold mt-1 text-amber-500 dark:text-amber-400">Recommendation 2</div>
-          <p className="text-xs text-amber-600 dark:text-amber-400/80 mt-2">Briefing document lacks specificity in Impact section.</p>
+          <h3 className="font-mono text-[10px] tracking-[0.14em] uppercase text-ink-faint font-medium">Weakest Link</h3>
+          <div className="font-serif font-medium text-[18px] mt-1 text-ink">
+            {hasNao ? "Recommendation 2" : "Locked"}
+          </div>
+          <p className="font-serif italic text-[12px] text-ink-soft mt-2 leading-relaxed">
+            {hasNao
+              ? "Briefing document lacks specificity in Impact section."
+              : "Insights appear after Narrative Anchor generation."}
+          </p>
         </div>
 
-        <div className="p-6 rounded-2xl glass-panel relative overflow-hidden group">
-          <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="p-5 bg-panel border border-rule rounded-lg relative overflow-hidden group">
+          <div className="absolute inset-0 bg-accent-clr/5 opacity-0 group-hover:opacity-100 transition-opacity" />
           <div className="flex justify-between items-start mb-4">
-            <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
-              <Activity className="w-5 h-5 text-blue-400" />
+            <div className="w-9 h-9 rounded-full bg-paper flex items-center justify-center border border-rule">
+              <Activity className="w-4 h-4 text-accent-clr" />
             </div>
           </div>
-          <h3 className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">Next Action</h3>
-          <div className="text-xl font-bold mt-1 text-foreground">Review Essay Feedback</div>
-          <p className="text-xs text-muted-foreground mt-2">Editing Agent left 3 rewrite suggestions on Essay 1.</p>
+          <h3 className="font-mono text-[10px] tracking-[0.14em] uppercase text-ink-faint font-medium">Next Action</h3>
+          <div className="font-serif font-medium text-[18px] mt-1 text-ink">
+            {hasNao ? "Review Essay Feedback" : "Finish Consultation Form"}
+          </div>
+          <p className="font-serif italic text-[12px] text-ink-soft mt-2 leading-relaxed">
+            {hasNao
+              ? "Editing Agent left 3 rewrite suggestions on Essay 1."
+              : `${yearsExperience > 0 ? `${yearsExperience} years of experience captured.` : "Start by completing your intake details."}`}
+          </p>
         </div>
       </div>
 
-      <div className="pt-8">
-        <h2 className="text-xl font-bold tracking-tight mb-6 flex items-center gap-2 text-foreground">
-          <BookOpen className="w-5 h-5 text-muted-foreground" /> Module Progress
+      <div className="pt-6">
+        <h2 className="font-mono text-[11px] tracking-[0.14em] uppercase text-ink-faint mb-6 pb-2 border-b border-rule flex items-center justify-between">
+          Module Progress <span>{modules.length} steps</span>
         </h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[
-            { id: 1, name: "Consultation Form", status: "Completed", path: "/dashboard/consultation" },
-            { id: 2, name: "Resume / CV", status: "Reviewed (95/100)", path: "/dashboard/resume" },
-            { id: 3, name: "Recommendation Letters", status: "Action Required", pending: true, path: "/dashboard/recommendations" },
-            { id: 4, name: "Personal Essays", status: "In Progress (3 drafts)", path: "/dashboard/essays" },
-            { id: 5, name: "School-Specific Essays", status: "Not Started", path: "/dashboard/school-essays" },
-            { id: 6, name: "Scholarship Essays", status: "Not Started", path: "/dashboard/scholarships" },
-            { id: 7, name: "Transcripts + Test Scores", status: "Completed", path: "/dashboard/transcripts" },
-            { id: 8, name: "Interview Prep", status: "Locked", locked: true, path: "/dashboard/interviews" }
-          ].map(mod => (
-            <Link href={mod.locked ? "#" : mod.path} key={mod.id}>
-              <div className={`p-5 rounded-xl border flex items-center justify-between transition-all ${
-                mod.locked ? "opacity-50 grayscale border-border bg-black/5 dark:bg-black/20 cursor-not-allowed" : 
-                mod.pending ? "border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10" :
-                "border-border glass-panel hover:bg-black/5 dark:hover:bg-white/5"
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {modules.map(mod => (
+            <Link href={mod.locked ? "#" : mod.path} key={mod.id} className="group">
+              <div className={`p-4 rounded-lg border flex items-center justify-between transition-all duration-200 ${
+                mod.locked ? "opacity-45 pointer-events-none bg-panel-deep border-rule" : 
+                mod.pending ? "border-accent-clr bg-accent-soft/20 hover:bg-accent-soft/30" :
+                "border-rule bg-panel hover:bg-panel-deep"
               }`}>
                 <div className="flex items-center gap-4">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
-                    mod.status.includes("Completed") ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" :
-                    mod.status.includes("Action") ? "bg-amber-500/20 text-amber-600 dark:text-amber-400" :
-                    "bg-black/10 dark:bg-white/10 text-muted-foreground"
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center font-mono text-[10px] font-medium shrink-0 ${
+                    mod.status.includes("Completed") ? "bg-ok text-paper" :
+                    mod.pending ? "bg-accent-clr text-paper" :
+                    "bg-paper-deep text-ink-faint"
                   }`}>
                     {mod.id}
                   </div>
                   <div>
-                    <h4 className="font-medium text-foreground">{mod.name}</h4>
-                    <p className={`text-xs mt-0.5 ${mod.pending ? "text-amber-600/80 dark:text-amber-400/80" : "text-muted-foreground"}`}>{mod.status}</p>
+                    <h4 className="font-sans font-medium text-[13px] text-ink leading-tight">{mod.name}</h4>
+                    <p className={`font-mono text-[10px] mt-0.5 uppercase tracking-wide ${mod.pending ? "text-accent-clr" : "text-ink-faint"}`}>{mod.status}</p>
                   </div>
                 </div>
                 {!mod.locked && (
-                  <ArrowRight className={`w-4 h-4 ${mod.pending ? "text-amber-500" : "text-muted-foreground opacity-50"}`} />
+                  <ArrowRight className={`w-3.5 h-3.5 transition-transform group-hover:translate-x-1 ${mod.pending ? "text-accent-clr" : "text-ink-faint opacity-50"}`} />
                 )}
               </div>
             </Link>

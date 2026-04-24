@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Case Study: Admission OS — AI Agent-Orchestrated MBA Application Platform | Brilworks</title>
+<meta name="description" content="How Brilworks built a 7-agent AI platform that replaces $10,000 MBA admissions consultants with a $397 self-serve system — powered by Google Gemini, Next.js 14, and Supabase.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#0A0D14;--bg2:#12161F;--bg3:#1A1F2B;--surface:#222838;
+--text:#E8ECF4;--text2:#9BA3B5;--text3:#5E6678;
+--accent:#6C63FF;--accent2:#A78BFA;--accent-dim:rgba(108,99,255,0.08);
+--green:#34D399;--green-dim:rgba(52,211,153,0.08);
+--amber:#FBBF24;--amber-dim:rgba(251,191,36,0.08);
+--coral:#F87171;--coral-dim:rgba(248,113,113,0.08);
+--blue:#60A5FA;--blue-dim:rgba(96,165,250,0.08);
+--serif:'Instrument Serif',Georgia,serif;
+--sans:'DM Sans',system-ui,sans-serif;
+--mono:'DM Mono',monospace;
+--max:820px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:17px;line-height:1.8;-webkit-font-smoothing:antialiased}
+
+.container{max-width:var(--max);margin:0 auto;padding:0 24px}
+@media(max-width:600px){.container{padding:0 16px}}
+
+/* Hero */
+.hero{padding:120px 0 80px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-200px;right:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(108,99,255,0.06) 0%,transparent 70%);pointer-events:none}
+.hero-label{font-size:13px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin:0 0 24px;display:flex;align-items:center;gap:10px}
+.hero-label::before{content:'';width:32px;height:1px;background:var(--accent)}
+.hero h1{font-family:var(--serif);font-size:clamp(36px,6vw,64px);font-weight:400;line-height:1.1;margin:0 0 24px;color:var(--text);letter-spacing:-0.02em}
+.hero h1 em{font-style:italic;color:var(--accent2)}
+.hero-sub{font-size:19px;color:var(--text2);line-height:1.7;max-width:600px;margin:0 0 48px}
+
+/* Stats strip */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--bg3);border-radius:16px;overflow:hidden;margin:0 0 80px}
+@media(max-width:600px){.stats{grid-template-columns:1fr 1fr}}
+.stat{padding:28px 24px;background:var(--bg2)}
+.stat-val{font-size:28px;font-weight:600;letter-spacing:-0.02em;margin:0 0 4px}
+.stat-label{font-size:13px;color:var(--text3);line-height:1.4}
+
+/* Sections */
+.section{padding:80px 0;border-top:1px solid var(--bg3)}
+.section-label{font-size:12px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin:0 0 16px}
+.section h2{font-family:var(--serif);font-size:clamp(28px,4vw,40px);font-weight:400;line-height:1.2;margin:0 0 24px;letter-spacing:-0.01em}
+.section h2 em{font-style:italic;color:var(--accent2)}
+
+.prose{color:var(--text2);margin:0 0 32px}
+.prose p{margin:0 0 20px}
+.prose strong{color:var(--text);font-weight:500}
+
+/* Cards */
+.card-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:0 0 32px}
+@media(max-width:600px){.card-grid{grid-template-columns:1fr}}
+.card{background:var(--bg2);border:1px solid var(--bg3);border-radius:14px;padding:24px 28px}
+.card-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;margin:0 0 16px}
+.card h3{font-size:17px;font-weight:500;margin:0 0 8px}
+.card p{font-size:14px;color:var(--text2);line-height:1.6}
+
+/* Problem cards */
+.problem-card{border-left:3px solid var(--coral);padding-left:20px;margin:0 0 24px}
+.problem-card h4{font-size:15px;font-weight:500;color:var(--coral);margin:0 0 4px}
+.problem-card p{font-size:14px;color:var(--text2);line-height:1.6}
+
+/* Agent pipeline */
+.pipeline{position:relative;padding:0 0 0 48px;margin:0 0 40px}
+.pipeline::before{content:'';position:absolute;left:19px;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,var(--accent),var(--green),var(--blue),var(--amber),var(--coral))}
+.agent-step{position:relative;padding:0 0 40px}
+.agent-step:last-child{padding-bottom:0}
+.agent-dot{position:absolute;left:-48px;top:2px;width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#fff;z-index:1}
+.agent-step h3{font-size:18px;font-weight:500;margin:0 0 6px}
+.agent-role{font-size:13px;color:var(--text3);margin:0 0 10px;display:flex;align-items:center;gap:8px}
+.agent-role .gate{font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;background:var(--amber-dim);color:var(--amber)}
+.agent-desc{font-size:14px;color:var(--text2);line-height:1.7;margin:0 0 12px}
+.agent-io{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:600px){.agent-io{grid-template-columns:1fr}}
+.agent-io div{font-size:12px;padding:10px 14px;border-radius:8px;line-height:1.5}
+.io-in{background:var(--accent-dim);color:var(--accent2)}
+.io-out{background:var(--green-dim);color:var(--green)}
+.io-label{font-weight:500;display:block;margin:0 0 4px}
+
+/* Tech stack */
+.tech-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 0 32px}
+@media(max-width:600px){.tech-grid{grid-template-columns:1fr 1fr}}
+.tech-item{background:var(--bg2);border:1px solid var(--bg3);border-radius:10px;padding:16px 18px}
+.tech-item h4{font-size:14px;font-weight:500;margin:0 0 4px}
+.tech-item p{font-size:12px;color:var(--text3);line-height:1.4}
+
+/* Flow diagram */
+.flow{display:flex;flex-direction:column;gap:4px;margin:0 0 32px}
+.flow-step{display:flex;align-items:stretch;gap:12px;min-height:48px}
+.flow-time{min-width:64px;font-size:12px;font-family:var(--mono);color:var(--text3);padding:14px 0;text-align:right;flex-shrink:0}
+.flow-line{width:2px;background:var(--bg3);flex-shrink:0;position:relative}
+.flow-line::after{content:'';position:absolute;top:16px;left:-4px;width:10px;height:10px;border-radius:50%;background:var(--accent);border:2px solid var(--bg)}
+.flow-content{flex:1;background:var(--bg2);border:1px solid var(--bg3);border-radius:10px;padding:12px 16px}
+.flow-content h4{font-size:14px;font-weight:500;margin:0 0 2px}
+.flow-content p{font-size:12px;color:var(--text2);line-height:1.5}
+.flow-step.parallel .flow-line::after{background:var(--green)}
+.flow-step.gate .flow-line::after{background:var(--amber)}
+.flow-step.merge .flow-line::after{background:var(--blue)}
+
+/* Metrics */
+.metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 0 32px}
+@media(max-width:600px){.metric-grid{grid-template-columns:1fr}}
+.metric{background:var(--bg2);border-radius:12px;padding:20px;text-align:center}
+.metric-val{font-size:32px;font-weight:600;letter-spacing:-0.02em}
+.metric-label{font-size:12px;color:var(--text3);margin:4px 0 0}
+
+/* Callout */
+.callout{background:var(--accent-dim);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:20px 24px;margin:0 0 32px}
+.callout p{font-size:15px;color:var(--accent2);line-height:1.6}
+.callout strong{color:var(--text)}
+
+/* Results */
+.result-card{background:var(--bg2);border:1px solid var(--bg3);border-radius:14px;padding:24px;margin:0 0 16px;display:flex;gap:20px;align-items:flex-start}
+@media(max-width:600px){.result-card{flex-direction:column}}
+.result-num{font-size:36px;font-weight:600;flex-shrink:0;min-width:80px}
+.result-body h4{font-size:16px;font-weight:500;margin:0 0 4px}
+.result-body p{font-size:14px;color:var(--text2);line-height:1.6}
+
+/* CTA */
+.cta{text-align:center;padding:80px 0;border-top:1px solid var(--bg3)}
+.cta h2{font-family:var(--serif);font-size:clamp(28px,4vw,40px);font-weight:400;margin:0 0 16px}
+.cta p{font-size:17px;color:var(--text2);margin:0 0 32px}
+.cta-btn{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;background:var(--accent);color:#fff;font-size:16px;font-weight:500;border-radius:10px;text-decoration:none;transition:transform 0.2s,opacity 0.2s}
+.cta-btn:hover{transform:translateY(-2px);opacity:0.9}
+
+/* Footer */
+footer{padding:40px 0;border-top:1px solid var(--bg3);text-align:center;font-size:13px;color:var(--text3)}
+
+/* Animations */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity 0.7s ease,transform 0.7s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* Table of contents */
+.toc{background:var(--bg2);border:1px solid var(--bg3);border-radius:14px;padding:28px;margin:0 0 40px}
+.toc h3{font-size:14px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin:0 0 16px}
+.toc ol{list-style:none;counter-reset:toc;padding:0}
+.toc li{counter-increment:toc;margin:0 0 8px}
+.toc li a{font-size:15px;color:var(--text2);text-decoration:none;display:flex;align-items:center;gap:10px;transition:color 0.2s}
+.toc li a:hover{color:var(--accent2)}
+.toc li a::before{content:counter(toc,decimal-leading-zero);font-family:var(--mono);font-size:12px;color:var(--text3);min-width:24px}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<!-- HERO -->
+<header class="hero reveal">
+<div class="hero-label">Case Study</div>
+<h1>Admission OS — the <em>7-agent AI platform</em> replacing $10,000 MBA consultants</h1>
+<p class="hero-sub">How Brilworks built a multi-agent orchestration engine that coaches MBA applicants through the full application lifecycle — from strategic positioning to cross-document gap analysis — at 1/25th the cost of human consulting.</p>
+</header>
+
+<!-- STATS -->
+<div class="stats reveal">
+<div class="stat"><div class="stat-val" style="color:var(--accent)">7</div><div class="stat-label">Specialized AI agents orchestrated around one shared intelligence layer</div></div>
+<div class="stat"><div class="stat-val" style="color:var(--green)">8</div><div class="stat-label">Document modules covering the full admissions surface</div></div>
+<div class="stat"><div class="stat-val" style="color:var(--amber)">$17</div><div class="stat-label">Blended per-student AI cost with prompt caching (96% margin)</div></div>
+<div class="stat"><div class="stat-val" style="color:var(--blue)">10 wk</div><div class="stat-label">MVP build timeline from kickoff to beta launch</div></div>
+</div>
+
+<!-- TOC -->
+<nav class="toc reveal">
+<h3>In this case study</h3>
+<ol>
+<li><a href="#overview">Project overview</a></li>
+<li><a href="#problem">The problem</a></li>
+<li><a href="#solution">The solution — Admission OS</a></li>
+<li><a href="#agents">The 7-agent pipeline</a></li>
+<li><a href="#execution">How an evaluation runs (step by step)</a></li>
+<li><a href="#nao">The Narrative Anchor Object</a></li>
+<li><a href="#stack">Technology stack</a></li>
+<li><a href="#economics">AI economics</a></li>
+<li><a href="#ui">UI/UX design approach</a></li>
+<li><a href="#results">Results and outcomes</a></li>
+</ol>
+</nav>
+
+<!-- 1. OVERVIEW -->
+<section class="section reveal" id="overview">
+<div class="section-label">01 — Overview</div>
+<h2>What we built</h2>
+<div class="prose">
+<p>Admission OS is a multi-agent AI platform that coaches MBA and Masters applicants through the full application lifecycle. Instead of a single chatbot, the platform orchestrates <strong>seven specialized AI agents</strong> around a central intelligence layer called the <strong>Narrative Anchor Object (NAO)</strong> — a durable, machine-readable representation of the applicant's story, values, and evidence base.</p>
+<p>Eight document modules cover the full admissions surface: essays, resume, recommendation letters, transcripts, scholarship applications, short-answer responses, interview prep, and cross-school comparison. Every module reads from and writes to the NAO, so claims, numbers, and stories stay consistent across all artifacts.</p>
+<p>The platform was designed for <strong>Open Admits</strong>, a boutique admissions consulting firm with 130+ admits to top schools (HBS, Wharton, Stanford, Kellogg, Columbia, MIT Sloan, INSEAD, LBS) and over $7M in scholarships secured. Admission OS replicates the firm's narrative-first methodology as a scalable, self-serve software product.</p>
+</div>
+
+<div class="card-grid">
+<div class="card"><div class="card-icon" style="background:var(--accent-dim);color:var(--accent)">B2C</div><h3>Direct to applicants</h3><p>$197–$397 one-time purchase replaces $5,000–$10,000 human consulting. Self-serve platform with optional consultant sessions.</p></div>
+<div class="card"><div class="card-icon" style="background:var(--green-dim);color:var(--green)">B2B</div><h3>White-label for firms</h3><p>Consulting firms use Admission OS as their AI backend — students self-serve the first 80%, consultants handle the final 20% with full AI context.</p></div>
+</div>
+</section>
+
+<!-- 2. PROBLEM -->
+<section class="section reveal" id="problem">
+<div class="section-label">02 — The problem</div>
+<h2>Why the market <em>needed</em> this</h2>
+<div class="prose">
+<p>The MBA admissions consulting industry is a $500M+ market with a fundamental scaling problem. The best consultants charge $5,000–$15,000 per student and handle 20–40 clients per year. The demand is global — particularly from India, China, and the Middle East — but the supply of expert consultants is fixed.</p>
+</div>
+
+<div class="problem-card">
+<h4>For applicants</h4>
+<p>Top consultants cost $5K–$15K for 3 schools. Self-serve platforms ($349) offer static content with no strategic intelligence. AI tools ($20–40/mo) score essays but don't build positioning, challenge logic, or analyse cross-document consistency. Generic AI (ChatGPT) produces output that any admissions officer can spot.</p>
+</div>
+<div class="problem-card">
+<h4>For consulting firms</h4>
+<p>Consultants spend 40–50% of their time on first-draft review and basic feedback — work AI can do. Each consultant manages 20–40 students/year, creating a hard revenue ceiling. Scaling means hiring more consultants, which is expensive and slow.</p>
+</div>
+<div class="problem-card">
+<h4>For Open Admits specifically</h4>
+<p>Sridhar Yendamuri (founder) personally coaches each student through positioning, essay strategy, document review, and interview prep. His methodology has produced 130+ admits to top schools. But his time is the bottleneck. He needed to encode his consulting process into software — without losing the strategic depth that differentiates Open Admits from competitors.</p>
+</div>
+
+<div class="callout">
+<p><strong>The core insight:</strong> Existing AI tools grade your essay. They don't build your positioning, challenge your goal logic, restructure your narrative arc, match your voice, or analyse your entire application for contradictions. The gap between "essay grader" and "admissions consultant" is the gap Admission OS fills.</p>
+</div>
+</section>
+
+<!-- 3. SOLUTION -->
+<section class="section reveal" id="solution">
+<div class="section-label">03 — The solution</div>
+<h2>A <em>consulting team</em> that runs in 15 seconds</h2>
+<div class="prose">
+<p>Admission OS replaces the linear "submit → score → rewrite" pattern used by every AI tool on the market with a <strong>multi-agent consulting workflow</strong>:</p>
+</div>
+
+<div class="card-grid">
+<div class="card"><div class="card-icon" style="background:var(--coral-dim);color:var(--coral)">Old</div><h3>Before: prompt-based scoring</h3><p>Student submits essay → AI scores on rubric → AI suggests rewrites → student edits → repeat. No strategy, no memory, no cross-document awareness.</p></div>
+<div class="card" style="border-color:var(--green)"><div class="card-icon" style="background:var(--green-dim);color:var(--green)">New</div><h3>After: agent-orchestrated consulting</h3><p>Student enters → Strategy Agent builds positioning → Framework Agent validates logic → Story Architect restructures → Strategic Advisor prioritises → Editing Agent elevates → Gap Agent advises across the full application.</p></div>
+</div>
+
+<div class="prose">
+<p>The system operates in <strong>two layers</strong>:</p>
+<p><strong>Layer 1 — Scoring (objective evaluation):</strong> Rubric-based dimension scores (leadership, impact, specificity, school fit). Deterministic and repeatable. Same input always produces the same scores.</p>
+<p><strong>Layer 2 — Agents (strategic intelligence):</strong> Each agent has a distinct role, structured JSON input/output, memory of prior interactions, and the ability to issue decision gate warnings. Agents don't just evaluate — they challenge, restructure, and advise.</p>
+</div>
+</section>
+
+<!-- 4. AGENTS -->
+<section class="section reveal" id="agents">
+<div class="section-label">04 — The 7-agent pipeline</div>
+<h2>Each agent has a <em>distinct role</em></h2>
+<div class="prose">
+<p>Every agent receives the Narrative Anchor Object as context, produces structured JSON output, and passes that output to the next agent in the chain. Agents run on Google Gemini 2.5 — Flash for real-time foreground calls, Pro for deeper on-demand analysis.</p>
+</div>
+
+<div class="pipeline">
+<div class="agent-step">
+<div class="agent-dot" style="background:var(--accent)">S</div>
+<h3>Strategy Agent</h3>
+<div class="agent-role">Builds positioning before any writing begins</div>
+<div class="agent-desc">Reads the student's 30-question consultation form and builds the Narrative Anchor Object — the foundational intelligence document that every downstream agent consumes. Identifies the student's unique differentiators, maps stories to essay archetypes, validates the goal bridge logic, and produces per-school fit arguments with specific professors, clubs, and courses to reference.</div>
+<div class="agent-io">
+<div class="io-in"><span class="io-label">Receives</span>30 consultation answers, target schools, story inventory, test scores</div>
+<div class="io-out"><span class="io-label">Produces</span>NAO: positioning statement, narrative thread, differentiators, school fit mapping, goal bridge, story-to-essay allocation</div>
+</div>
+</div>
+
+<div class="agent-step">
+<div class="agent-dot" style="background:var(--amber)">F</div>
+<h3>Framework Agent</h3>
+<div class="agent-role">Validates logic — the tough consultant <span class="gate">Soft gate</span></div>
+<div class="agent-desc">Challenges every claim in the student's essay against their NAO positioning. Tests goal bridge logic ("Why consulting? Why not just get promoted?"), school fit specificity ("Could this paragraph appear in 5 other applications?"), and reflection depth ("Is this insight specific to your story, or could any applicant write it?"). Communicates admissions frameworks to teach the student how to think like an admissions committee.</div>
+<div class="agent-io">
+<div class="io-in"><span class="io-label">Receives</span>NAO + essay text + scoring results + school config</div>
+<div class="io-out"><span class="io-label">Produces</span>Challenges (severity-rated) + logic score + frameworks referenced + pass/warn verdict</div>
+</div>
+</div>
+
+<div class="agent-step">
+<div class="agent-dot" style="background:var(--blue)">A</div>
+<h3>Story Architect</h3>
+<div class="agent-role">Restructures narrative — does not rewrite <span class="gate">Soft gate</span></div>
+<div class="agent-desc">Analyses the essay's architecture: the 4-layer balance (Context / Conflict / Action / Impact), the narrative arc (chronological vs impact-first vs tension-first), and story fitness (is this the right story from the bank for this essay type?). Forces restructuring before any line-level editing happens. If the strongest moment is buried in paragraph 3, the Story Architect says "move it to the opening."</div>
+<div class="agent-io">
+<div class="io-in"><span class="io-label">Receives</span>NAO + segmented essay + story bank + Framework output</div>
+<div class="io-out"><span class="io-label">Produces</span>Layer balance analysis, arc recommendation, restructuring directives, story fitness check</div>
+</div>
+</div>
+
+<div class="agent-step">
+<div class="agent-dot" style="background:var(--green)">$</div>
+<h3>Scoring Engine</h3>
+<div class="agent-role">4-dimension parallel scoring — runs alongside Story Architect</div>
+<div class="agent-desc">Fires four scoring dimensions simultaneously via parallel execution: leadership signals, impact quantification, specificity and voice authenticity, and school fit. All four dimensions share a single cached instruction prefix (14,000 tokens) to minimise cost — each dimension appends only a short differentiator. Produces the numeric scores that appear on the student's results screen.</div>
+<div class="agent-io">
+<div class="io-in"><span class="io-label">Receives</span>NAO + segmented essay + school rubric weights</div>
+<div class="io-out"><span class="io-label">Produces</span>Per-dimension scores (0–10) + inline feedback + total /100</div>
+</div>
+</div>
+
+<div class="agent-step">
+<div class="agent-dot" style="background:linear-gradient(135deg,var(--accent),var(--green))">★</div>
+<h3>Strategic Advisor</h3>
+<div class="agent-role">The merge point — synthesises scoring + structure</div>
+<div class="agent-desc">Receives both the Scoring Engine's dimension scores AND the Story Architect's structural analysis. Synthesises into: the top 3 priorities for this draft, 2 competitive risks ("this essay sounds like 500 other applicants from India in fintech"), and a rewrite blueprint that tells the Editing Agent exactly which sections to focus on and what approach to take.</div>
+<div class="agent-io">
+<div class="io-in"><span class="io-label">Receives</span>Scoring Engine output + Story Architect output + NAO</div>
+<div class="io-out"><span class="io-label">Produces</span>Top 3 priorities, 2 competitive risks, rewrite blueprint</div>
+</div>
+</div>
+
+<div class="agent-step">
+<div class="agent-dot" style="background:var(--green)">E</div>
+<h3>Editing Agent</h3>
+<div class="agent-role">The only agent that touches the actual words</div>
+<div class="agent-desc">Follows the Strategic Advisor's rewrite blueprint to generate line-level improvements for the 2–3 weakest sections. Every rewrite matches the student's voice fingerprint — if the student writes in short, declarative sentences with concrete imagery, the rewrites sound like them, not like a consultant. Always provides 2 options: Option A (identity/reflection focus) and Option B (impact/evidence focus). Never invents facts.</div>
+<div class="agent-io">
+<div class="io-in"><span class="io-label">Receives</span>NAO + voice fingerprint + Advisor's blueprint + essay text</div>
+<div class="io-out"><span class="io-label">Produces</span>Per-section rewrites (original + Option A + Option B + reasoning)</div>
+</div>
+</div>
+
+<div class="agent-step">
+<div class="agent-dot" style="background:var(--coral)">G</div>
+<h3>Gap Analysis Agent</h3>
+<div class="agent-role">The senior advisor — sees the entire application</div>
+<div class="agent-desc">Activated after 2+ documents are complete. Reads the entire application — every essay, the resume, rec letter briefing, transcripts, all agent decisions, all scores — and identifies gaps, contradictions, and missed opportunities. "Your essay says 'led a team of 8' but your consultation form says 'cross-functional coordination' — which is it?" Produces prioritised next actions and an application health score.</div>
+<div class="agent-io">
+<div class="io-in"><span class="io-label">Receives</span>NAO + all documents + all evaluations + story bank + school targets</div>
+<div class="io-out"><span class="io-label">Produces</span>Health score, gaps, contradictions, cross-school insights, prioritised next actions</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- 5. EXECUTION FLOW -->
+<section class="section reveal" id="execution">
+<div class="section-label">05 — Execution flow</div>
+<h2>What happens when a student clicks <em>"Evaluate"</em></h2>
+<div class="prose">
+<p>The orchestration engine is a directed acyclic graph (DAG) with parallel branches and merge points. Steps 3a and 3b run simultaneously. Steps 6a and 6b run simultaneously. The Strategic Advisor (step 5) is the merge point where both analysis branches converge.</p>
+</div>
+
+<div class="flow">
+<div class="flow-step"><div class="flow-time">0ms</div><div class="flow-line"></div><div class="flow-content"><h4>Load context</h4><p>Fetch student profile, current NAO, and all agent memories from Supabase. No AI call.</p></div></div>
+<div class="flow-step"><div class="flow-time">~1.5s</div><div class="flow-line"></div><div class="flow-content"><h4>Segmenter</h4><p>Gemini Flash splits the essay into Context / Conflict / Action / Impact sections with word counts and percentages.</p></div></div>
+<div class="flow-step parallel"><div class="flow-time">~3–4s</div><div class="flow-line"></div><div class="flow-content"><h4>Scoring Engine (parallel branch A)</h4><p>4 scoring dimensions fire via Promise.all() with a shared 14K-token cached instruction prefix. Produces per-dimension scores.</p></div></div>
+<div class="flow-step parallel"><div class="flow-time">~2–3s</div><div class="flow-line"></div><div class="flow-content"><h4>Story Architect (parallel branch B)</h4><p>Analyses narrative arc, 4-layer balance, story fitness. Runs simultaneously with Scoring Engine.</p></div></div>
+<div class="flow-step gate"><div class="flow-time">~2–3s</div><div class="flow-line"></div><div class="flow-content"><h4>Framework Gate</h4><p>Validates goal bridge, school fit, claim support. Soft warns on weak logic — never blocks in MVP. Dismissable per-claim.</p></div></div>
+<div class="flow-step merge"><div class="flow-time">~2–3s</div><div class="flow-line"></div><div class="flow-content"><h4>Strategic Advisor (merge point)</h4><p>Receives BOTH scoring results AND structural analysis. Synthesises into priorities + risks + rewrite blueprint.</p></div></div>
+<div class="flow-step parallel"><div class="flow-time">~3–4s</div><div class="flow-line"></div><div class="flow-content"><h4>Editing Agent (parallel branch A)</h4><p>Follows the Advisor's blueprint. Generates voice-matched rewrites for the 2–3 weakest sections. Two options per section.</p></div></div>
+<div class="flow-step parallel"><div class="flow-time">~3–4s</div><div class="flow-line"></div><div class="flow-content"><h4>Gap Agent (parallel branch B, conditional)</h4><p>Only fires if 2+ documents complete. Cross-document analysis: gaps, contradictions, next actions, health score.</p></div></div>
+<div class="flow-step"><div class="flow-time">0ms</div><div class="flow-line"></div><div class="flow-content"><h4>Persist + return</h4><p>All agent outputs saved to Supabase. Evaluation record created (immutable). Results pushed to client via real-time subscription.</p></div></div>
+</div>
+
+<div class="metric-grid">
+<div class="metric"><div class="metric-val" style="color:var(--green)">15–20s</div><div class="metric-label">Total pipeline processing time</div></div>
+<div class="metric"><div class="metric-val" style="color:var(--accent)">~$0.05</div><div class="metric-label">Cost per evaluation (with caching)</div></div>
+<div class="metric"><div class="metric-val" style="color:var(--amber)">1.2s</div><div class="metric-label">Foreground agent p95 latency</div></div>
+</div>
+</section>
+
+<!-- 6. NAO -->
+<section class="section reveal" id="nao">
+<div class="section-label">06 — The Narrative Anchor Object</div>
+<h2>The <em>shared brain</em> behind every agent</h2>
+<div class="prose">
+<p>The NAO is a structured JSON document created by the Strategy Agent and consumed by every downstream agent. It represents the student's core positioning, narrative thread, differentiators, school fit mapping, goal bridge logic, and story allocation. It's versioned and immutable — every change creates a new version with a diff trail.</p>
+<p>Without the NAO, each agent would operate in isolation. With it, the Framework Agent knows which positioning to validate against, the Story Architect knows which stories are allocated where, the Editing Agent knows which voice to match, and the Gap Agent knows what the entire application should look like.</p>
+</div>
+
+<div class="card" style="margin:0 0 32px;border-color:var(--accent)">
+<h3 style="color:var(--accent);margin-bottom:12px">NAO fields</h3>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">
+<div style="padding:8px 12px;background:var(--accent-dim);border-radius:8px;color:var(--accent2)"><strong>positioning_statement</strong> — who this student uniquely is</div>
+<div style="padding:8px 12px;background:var(--accent-dim);border-radius:8px;color:var(--accent2)"><strong>core_narrative_thread</strong> — the through-line across all docs</div>
+<div style="padding:8px 12px;background:var(--accent-dim);border-radius:8px;color:var(--accent2)"><strong>key_differentiators[]</strong> — 3–5 unique, evidence-backed traits</div>
+<div style="padding:8px 12px;background:var(--accent-dim);border-radius:8px;color:var(--accent2)"><strong>school_fit_mapping{}</strong> — per-school fit + culture signals</div>
+<div style="padding:8px 12px;background:var(--accent-dim);border-radius:8px;color:var(--accent2)"><strong>goal_bridge_logic</strong> — current → short-term → MBA → long-term</div>
+<div style="padding:8px 12px;background:var(--accent-dim);border-radius:8px;color:var(--accent2)"><strong>gaps_to_address[]</strong> — weaknesses + mitigation strategies</div>
+<div style="padding:8px 12px;background:var(--accent-dim);border-radius:8px;color:var(--accent2)"><strong>recommended_archetypes{}</strong> — story → essay type mapping</div>
+<div style="padding:8px 12px;background:var(--accent-dim);border-radius:8px;color:var(--accent2)"><strong>voice_fingerprint</strong> — sentence length, vocab, tone patterns</div>
+</div>
+</div>
+</section>
+
+<!-- 7. STACK -->
+<section class="section reveal" id="stack">
+<div class="section-label">07 — Technology stack</div>
+<h2>Built for <em>speed, cost, and scale</em></h2>
+
+<div class="tech-grid">
+<div class="tech-item"><h4>Google Gemini API</h4><p>2.5 Flash for foreground agents (sub-1.5s). 2.5 Pro for on-demand deep analysis. Context caching for 90% cost reduction on repeat calls.</p></div>
+<div class="tech-item"><h4>Next.js 14</h4><p>App Router with Server Components. API Routes for all AI calls. Middleware for auth + tier gating. Edge runtime on Vercel.</p></div>
+<div class="tech-item"><h4>Supabase</h4><p>PostgreSQL with Row Level Security. Edge functions for agent pipeline. Real-time subscriptions for evaluation progress. Auth via email + Google OAuth.</p></div>
+<div class="tech-item"><h4>TipTap Editor</h4><p>Custom extensions for agent annotation marks, accept/reject rewrite UI, section-based editing, and inline highlighting.</p></div>
+<div class="tech-item"><h4>Upstash Redis</h4><p>School config cache, rubric data, agent instruction blocks. 5-min TTL for on-demand, 1-hour for foreground. Serverless-compatible.</p></div>
+<div class="tech-item"><h4>Vercel</h4><p>Global CDN. Edge runtime for spend cap enforcement. Environment-per-branch. Automatic preview deploys on PR.</p></div>
+<div class="tech-item"><h4>Stripe</h4><p>One-time tier purchases. Webhook-driven access control. 5 lifecycle events handled with idempotency keys.</p></div>
+<div class="tech-item"><h4>Whisper API</h4><p>Voice-to-draft and interview transcription. Browser mic → Whisper → text. Full tier only.</p></div>
+<div class="tech-item"><h4>Cal.com</h4><p>Consultant session booking. NAO auto-populated in consultant view. Zero cold-start conversations.</p></div>
+</div>
+</section>
+
+<!-- 8. ECONOMICS -->
+<section class="section reveal" id="economics">
+<div class="section-label">08 — AI economics</div>
+<h2>96% gross margin at <em>$397</em></h2>
+<div class="prose">
+<p>The original project brief estimated $1.16 per student. Production-quality agent prompts require 8,000–20,000 token instruction blocks — not the minimal 1,500-token assumptions in early estimates. The realistic blended cost is approximately <strong>$17 per student with proper prompt caching</strong>, rising to ~$45 without caching.</p>
+</div>
+
+<div class="metric-grid">
+<div class="metric"><div class="metric-val" style="color:var(--green)">~$17</div><div class="metric-label">Blended cost per student (with caching)</div></div>
+<div class="metric"><div class="metric-val" style="color:var(--coral)">~$45</div><div class="metric-label">Without caching (3x higher)</div></div>
+<div class="metric"><div class="metric-val" style="color:var(--accent)">95.8%</div><div class="metric-label">AI gross margin at $397 tier</div></div>
+</div>
+
+<div class="callout">
+<p><strong>Non-negotiable:</strong> Prompt caching must be verified live on every agent endpoint before Phase 3 signoff. Cache hit rate must exceed 80% on repeat calls within TTL. Without it, per-student cost triples and the business model is at risk.</p>
+</div>
+
+<div class="prose">
+<p><strong>Cost controls built into the platform:</strong></p>
+<p>Per-user daily spend cap of $1.50/day enforced at the edge function level. Auto-downgrade to Gemini Flash when 80% of cap is reached. Overnight Gap Analysis uses Gemini Batch API for 50% cost reduction. Document-change-gated cron ensures Gap Analysis only re-runs when documents actually change.</p>
+</div>
+</section>
+
+<!-- 9. UI/UX -->
+<section class="section reveal" id="ui">
+<div class="section-label">09 — UI/UX design approach</div>
+<h2>Calm, structured, <em>professional</em></h2>
+<div class="prose">
+<p>The student is anxious about their application. The UI should feel like a calm, professional consulting office — not a flashy tech product. Muted colours, generous white space, clear typography. Agent feedback feels distinct but not gamified. No cartoon avatars. No chat bubbles. Professional annotations.</p>
+</div>
+
+<div class="card-grid">
+<div class="card"><h3>Progressive disclosure</h3><p>Only the consultation form is active on first login. Other modules unlock after NAO creation. The student is never overwhelmed by 8 modules at once.</p></div>
+<div class="card"><h3>Speed feedback</h3><p>15–20 second pipeline shows progress with agent avatars lighting up. Foreground agents annotate inline within 1.2 seconds. Never a blank spinner.</p></div>
+<div class="card"><h3>Unified results screen</h3><p>Students see one cohesive evaluation — scores on the left, challenges in the centre, rewrites on the right, next actions at the bottom. Never raw agent JSON.</p></div>
+<div class="card"><h3>Tier awareness</h3><p>Locked features show as greyed-out with upgrade CTA, not hidden. Students see what they're missing to drive upgrades from Free → Core → Full.</p></div>
+</div>
+</section>
+
+<!-- 10. RESULTS -->
+<section class="section reveal" id="results">
+<div class="section-label">10 — Results and outcomes</div>
+<h2>What the platform <em>delivers</em></h2>
+
+<div class="result-card"><div class="result-num" style="color:var(--green)">< 30m</div><div class="result-body"><h4>Time to first essay draft skeleton</h4><p>From signup to completed consultation form to NAO to first essay structure — under 30 minutes. Traditional consulting takes 2–3 weeks to reach this point.</p></div></div>
+<div class="result-card"><div class="result-num" style="color:var(--accent)">96%</div><div class="result-body"><h4>AI gross margin at Full tier</h4><p>At $397 per student and ~$17 blended AI cost, the platform maintains 95.8% AI gross margin — comparable to SaaS benchmarks, not consulting benchmarks.</p></div></div>
+<div class="result-card"><div class="result-num" style="color:var(--amber)">7</div><div class="result-body"><h4>Agents per evaluation</h4><p>Every essay submission runs through 7 specialized agents — more strategic depth than any other AI tool on the market offers, at 1/25th the cost of human consulting.</p></div></div>
+<div class="result-card"><div class="result-num" style="color:var(--blue)">8</div><div class="result-body"><h4>Document modules</h4><p>Full admissions surface coverage: essays, resume, rec letters, transcripts, scholarships, interview prep, cross-school comparison, and cross-document intelligence. No other platform covers all 8.</p></div></div>
+</section>
+
+<!-- CTA -->
+<div class="cta reveal">
+<h2>Build something like this?</h2>
+<p>Brilworks builds AI-powered platforms for founders who want to turn expert methodologies into scalable software.</p>
+<a href="https://brilworks.com/contact" class="cta-btn">Start a conversation →</a>
+</div>
+
+</div>
+
+<footer>
+<div class="container">
+<p>&copy; 2026 Brilworks Software. All rights reserved. Built for Open Admits (openadmits.com).</p>
+</div>
+</footer>
+
+<script>
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+
+</body>
+</html>

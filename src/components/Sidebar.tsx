@@ -1,80 +1,133 @@
 "use client";
 
+import { logout } from "@/app/auth/actions";
+import { useDashboardData } from "@/components/DashboardDataProvider";
+import { Check, LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { 
-  GraduationCap, 
-  LayoutDashboard, 
-  FileText, 
-  Users, 
-  BookOpen, 
-  Building2, 
-  Award, 
-  LineChart, 
-  Video 
-} from "lucide-react";
-import { ThemeToggle } from "./ThemeToggle";
+import { useState } from "react";
 
 export const NAVIGATION = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Platform Manual", href: "/dashboard/manual", icon: BookOpen },
-  { name: "1. Consultation Form", href: "/dashboard/consultation", icon: FileText },
-  { name: "2. Resume / CV", href: "/dashboard/resume", icon: FileText },
-  { name: "3. Recommendations", href: "/dashboard/recommendations", icon: Users },
-  { name: "4. Personal Essays", href: "/dashboard/essays", icon: BookOpen },
-  { name: "5. School Essays", href: "/dashboard/school-essays", icon: Building2 },
-  { name: "6. Scholarship Essays", href: "/dashboard/scholarships", icon: Award },
-  { name: "7. Transcripts", href: "/dashboard/transcripts", icon: LineChart },
-  { name: "8. Interview Prep", href: "/dashboard/interviews", icon: Video },
+  { id: 'home',       href: '/dashboard',         num: '·', name: 'Overview',          agent: 'Start here' },
+  { id: 'intake',     href: '/dashboard/consultation',      num: '1', name: 'Intake',            agent: '30 questions' },
+  { id: 'strategy',   href: '/dashboard/strategy',    num: '2', name: 'Strategy',          agent: 'NAO v1' },
+  { id: 'editor',     href: '/dashboard/essays',      num: '3', name: 'Essay editor',      agent: 'Story Architect · Editing' },
+  { id: 'deep',       href: '/dashboard/deep-review', num: '4', name: 'Deep review',       agent: 'Scoring · Advisor' },
+  { id: 'framework',  href: '/dashboard/framework',   num: '5', name: 'Framework gate',    agent: 'Unanchored claims' },
+  { id: 'gaps',       href: '/dashboard/gaps',        num: '6', name: 'Gap analysis',      agent: 'Missing evidence' },
+  { id: 'schools',    href: '/dashboard/school-essays',  num: '7', name: 'School comparison', agent: 'Per-school fit' },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { hasNao } = useDashboardData();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  async function handleLogout() {
+    setLoggingOut(true);
+    await logout();
+  }
 
   return (
-    <div className="w-64 border-r border-border bg-black/5 dark:bg-black/20 backdrop-blur-xl flex flex-col h-screen fixed left-0 top-0">
-      <div className="p-6 flex items-center justify-between border-b border-border transition-colors">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-            <GraduationCap className="text-white w-5 h-5" />
-          </div>
-          <span className="font-bold tracking-tight text-foreground">Admission OS</span>
-        </div>
-        <ThemeToggle />
+    <>
+    <aside className="w-[232px] bg-panel border-r border-rule flex flex-col h-full overflow-y-auto pt-5 px-4">
+      <div className="font-mono text-[10px] tracking-[0.14em] uppercase text-ink-faint pb-3 border-b border-rule mb-2.5 px-2">
+        Journey
       </div>
       
-      <div className="flex-1 overflow-y-auto py-6 flex flex-col gap-1 px-3">
-        <div className="text-xs font-semibold text-muted-foreground tracking-wider uppercase px-3 mb-2">Modules</div>
-        {NAVIGATION.map((item) => {
-          const isActive = pathname === item.href;
-          const Icon = item.icon;
+      <div className="flex-1 flex flex-col gap-0.5">
+        {NAVIGATION.map((s) => {
+          const isRouteAllowedWithoutNao = s.id === "home" || s.id === "intake";
+          const isLocked = !hasNao && !isRouteAllowedWithoutNao;
+          const isActive = pathname === s.href;
+          const isDone = false; 
           
           return (
             <Link 
-              key={item.href} 
-              href={item.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
-                isActive 
-                  ? "bg-black/10 dark:bg-white/10 text-foreground font-medium" 
-                  : "text-muted-foreground hover:bg-black/5 dark:hover:bg-white/5 hover:text-foreground"
+              key={s.href} 
+              href={isLocked ? "#" : s.href}
+              className={`flex items-start gap-2.5 p-2.5 rounded-[5px] transition-colors group ${
+                isLocked
+                  ? "opacity-45 pointer-events-none text-ink-faint"
+                  : isActive 
+                  ? "bg-accent-soft text-ink font-medium" 
+                  : "text-ink-soft hover:bg-panel-deep"
               }`}
             >
-              <Icon className={`w-4 h-4 ${isActive ? "text-indigo-500 dark:text-indigo-400" : ""}`} />
-              {item.name}
+              <div className={`w-5 h-5 rounded-full flex items-center justify-center font-mono text-[10px] font-medium shrink-0 mt-0.5 ${
+                isLocked
+                  ? "bg-paper-deep text-ink-faint"
+                  : isActive
+                    ? "bg-accent-clr text-paper"
+                    : "bg-paper-deep text-ink-faint"
+              }`}>
+                {isDone && !isActive ? <Check className="w-3 h-3" /> : s.num}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-[13px] font-medium leading-[1.3] font-sans">
+                  {s.name}
+                </div>
+                <div className={`font-mono text-[10px] mt-0.5 leading-[1.3] ${
+                  isLocked ? "text-ink-faint" : isActive ? "text-ink-soft" : "text-ink-faint"
+                }`}>
+                  {isLocked ? "Locked until NAO is generated" : s.agent}
+                </div>
+              </div>
             </Link>
           );
         })}
       </div>
       
-      <div className="p-4 border-t border-border">
-        <div className="glass-panel p-4 rounded-xl flex flex-col gap-2">
-          <div className="text-xs font-semibold text-muted-foreground">Application Health</div>
-          <div className="w-full bg-black/10 dark:bg-white/10 h-2 rounded-full overflow-hidden">
-            <div className="bg-gradient-to-r from-emerald-400 to-emerald-500 w-3/4 h-full" />
-          </div>
-          <div className="text-[10px] text-muted-foreground text-right">75% Complete</div>
-        </div>
+      <div className="mt-3.5 pt-3 border-t border-rule font-mono text-[10px] text-ink-faint leading-[1.5] pb-6 px-2">
+        <Link
+          href="/dashboard/profile"
+          className="mt-2 w-full border border-rule text-ink-soft tracking-[0.05em] uppercase p-1.5 rounded-[4px] hover:bg-panel-deep hover:text-ink transition-colors flex items-center justify-center"
+        >
+          Profile
+        </Link>
+        <button
+          onClick={() => setShowLogoutModal(true)}
+          className="mt-2 w-full flex items-center justify-center gap-1.5 border border-rule text-ink-soft tracking-[0.05em] uppercase p-1.5 rounded-[4px] hover:bg-danger-soft hover:text-danger hover:border-danger transition-colors"
+        >
+          <LogOut className="w-3 h-3" />
+          Log out
+        </button>
       </div>
-    </div>
+
+    </aside>
+
+      {showLogoutModal && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60" onClick={() => setShowLogoutModal(false)}>
+          <div className="bg-panel border border-rule rounded-[10px] p-6 w-[320px] shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-9 h-9 rounded-full bg-danger-soft flex items-center justify-center shrink-0">
+                <LogOut className="w-4 h-4 text-danger" />
+              </div>
+              <h2 className="text-[15px] font-semibold text-ink font-sans">Log out?</h2>
+            </div>
+            <p className="text-[13px] text-ink-soft font-sans leading-[1.6] mb-5">
+              You&apos;ll be returned to the login screen. Your progress is saved in this browser.
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowLogoutModal(false)}
+                className="flex-1 border border-rule text-ink-soft text-[12px] font-mono tracking-[0.05em] uppercase py-2 px-3 rounded-[5px] hover:bg-panel-deep transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleLogout}
+                disabled={loggingOut}
+                className="flex-1 text-[12px] font-mono tracking-[0.05em] uppercase py-2 px-3 rounded-[5px] transition-opacity hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
+                style={{ backgroundColor: "var(--danger)", color: "#ffffff" }}
+              >
+                {loggingOut ? "Signing out..." : "Log out"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

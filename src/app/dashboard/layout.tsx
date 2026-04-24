@@ -1,20 +1,52 @@
 "use client";
 
+import { DashboardDataProvider, useDashboardData } from "@/components/DashboardDataProvider";
+import { NAOPanel } from "@/components/NAOPanel";
 import { Sidebar } from "@/components/Sidebar";
+import { TopBar } from "@/components/TopBar";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+function DashboardShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const { hasNao, loading } = useDashboardData();
+
+  useEffect(() => {
+    if (loading || hasNao) {
+      return;
+    }
+
+    const allowedRoutes = new Set(["/dashboard", "/dashboard/consultation", "/dashboard/profile"]);
+
+    if (!allowedRoutes.has(pathname)) {
+      router.replace("/dashboard/consultation");
+    }
+  }, [hasNao, loading, pathname, router]);
+
   return (
-    <div className="flex bg-background min-h-screen text-foreground font-[family-name:var(--font-geist-sans)]">
+    <div className="grid grid-cols-[232px_1fr_340px] grid-rows-[56px_1fr] h-screen overflow-hidden bg-paper text-ink font-sans">
+      <div className="col-span-3">
+        <TopBar />
+      </div>
+
       <Sidebar />
-      
-      <main className="flex-1 ml-64 relative min-h-screen pb-12">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-[120px] pointer-events-none" />
-        
-        <div className="relative z-10 w-full h-full p-8">
+
+      <main className="overflow-y-auto bg-paper p-14 pb-20 custom-scrollbar">
+        <div className="max-w-[800px] mx-auto">
           {children}
         </div>
       </main>
+
+      <NAOPanel />
     </div>
+  );
+}
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <DashboardDataProvider>
+      <DashboardShell>{children}</DashboardShell>
+    </DashboardDataProvider>
   );
 }

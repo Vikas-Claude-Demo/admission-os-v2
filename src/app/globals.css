@@ -4,77 +4,87 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 44 26% 94%; /* #F5F1E8 converted to HSL */
+    --foreground: 33 10% 10%; /* #1C1A17 converted to HSL */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --paper: #F5F1E8;
+    --paper-deep: #EFE9DB;
+    --ink: #1C1A17;
+    --ink-soft: #45413B;
+    --ink-faint: #8B8579;
+    --rule: #D9D2BF;
+    --accent-clr: #B2511E;
+    --accent-soft: #EAC9AE;
+    --warn: #9B7A1C;
+    --warn-soft: #F6EFD8;
+    --ok: #4A6B2F;
+    --ok-soft: #E8EBD4;
+    --panel: #FAF7EF;
+    --panel-deep: #F0EAD8;
+    --danger: #8B2E1B;
+    --danger-soft: #F2DCD2;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 33 10% 10%;
+    --primary-foreground: 44 26% 94%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --secondary: 44 20% 90%;
+    --secondary-foreground: 33 10% 10%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 44 20% 90%;
+    --muted-foreground: 36 7% 51%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 20 71% 41%; /* #B2511E */
+    --accent-foreground: 44 26% 94%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 11 67% 33%;
+    --destructive-foreground: 44 26% 94%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --border: 44 22% 80%;
+    --input: 44 22% 80%;
+    --ring: 20 71% 41%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.75rem;
-    
-    /* Custom UI colors for generic fallbacks */
-    --glass-bg: rgba(0, 0, 0, 0.03);
-    --glass-border: rgba(0, 0, 0, 0.05);
-    --text-primary: 0 0% 9%;
-    --text-muted: 0 0% 40%;
+    --radius: 5px;
   }
 
+  /* For now, just overriding dark mode with similar warm tones or keeping it 
+     if user wants dark mode, but the target UI is light-based. 
+     I will make dark mode also follow the warm editorial theme. */
   .dark {
-    --background: 240 10% 4%;
-    --foreground: 0 0% 98%;
+    --background: 33 10% 10%;
+    --foreground: 44 26% 94%;
 
-    --card: 240 10% 4%;
-    --card-foreground: 0 0% 98%;
+    --paper: #1C1A17;
+    --paper-deep: #141210;
+    --ink: #F5F1E8;
+    --ink-soft: #D9D2BF;
+    --ink-faint: #8B8579;
+    --rule: #45413B;
+    --accent-clr: #D96E30;
+    --accent-soft: #452A1A;
+    --warn: #D9B030;
+    --warn-soft: #453A1A;
+    --ok: #6BA33F;
+    --ok-soft: #2A3B1A;
+    --panel: #262421;
+    --panel-deep: #1F1D1A;
+    --danger: #B23E2A;
+    --danger-soft: #451A14;
 
-    --popover: 240 10% 4%;
-    --popover-foreground: 0 0% 98%;
+    --primary: 44 26% 94%;
+    --primary-foreground: 33 10% 10%;
 
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
+    --secondary: 33 5% 20%;
+    --secondary-foreground: 44 26% 94%;
 
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
+    --muted: 33 5% 20%;
+    --muted-foreground: 44 10% 60%;
 
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
+    --accent: 20 64% 52%;
+    --accent-foreground: 33 10% 10%;
 
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-    
-    /* Custom UI colors */
-    --glass-bg: rgba(255, 255, 255, 0.03);
-    --glass-border: rgba(255, 255, 255, 0.05);
-    --text-primary: 0 0% 100%;
-    --text-muted: 0 0% 60%;
+    --border: 33 5% 25%;
+    --input: 33 5% 25%;
+    --ring: 20 64% 52%;
   }
 }
 

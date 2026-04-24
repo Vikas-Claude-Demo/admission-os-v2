@@ -1,0 +1,22 @@
+export type IntakePayload = {
+  fullName: string;
+  age: string;
+  citizenship: string;
+  archetype: string;
+  careerSummary: string;
+  primaryIndustry: string;
+  yearsExperience: string;
+  leadershipExperience: string;
+  undergradInstitution: string;
+  undergradGpa: string;
+  standardizedTestScore: string;
+  targetSchools: string;
+  shortTermGoal: string;
+  whyNow: string;
+  financialConstraints: string;
+  geographicPreference: string;
+  proudMoment: string;
+  failureStory: string;
+  writingRegister: string;
+  sentenceLength: string;
+};
